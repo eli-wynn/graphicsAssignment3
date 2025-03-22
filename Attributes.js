@@ -132,3 +132,54 @@ Attributes.prototype.updateTransforms = function( nTfms, ... minmax) {
   }
   return;
 }
+
+// ==========================================================================
+// Attributes class for managing vertex attributes
+// ==========================================================================
+
+function Attributes() {
+    this.attributes = [];
+    this.stride = 0;
+}
+
+Attributes.prototype.addAttribute = function(name, data, size) {
+    const attribute = {
+        name: name,
+        data: data,
+        size: size,
+        offset: this.stride
+    };
+    
+    this.attributes.push(attribute);
+    this.stride += size * 4; // 4 bytes per float
+};
+
+Attributes.prototype.getStride = function() {
+    return this.stride;
+};
+
+Attributes.prototype.getBuffer = function() {
+    // Calculate total buffer size
+    let totalSize = 0;
+    const numVertices = this.attributes[0].data.length / this.attributes[0].size;
+    
+    for (let i = 0; i < this.attributes.length; i++) {
+        totalSize += this.attributes[i].size * numVertices;
+    }
+    
+    // Create buffer
+    const buffer = new Float32Array(totalSize);
+    
+    // Fill buffer
+    let offset = 0;
+    for (let vertex = 0; vertex < numVertices; vertex++) {
+        for (let i = 0; i < this.attributes.length; i++) {
+            const attr = this.attributes[i];
+            for (let j = 0; j < attr.size; j++) {
+                buffer[offset++] = attr.data[vertex * attr.size + j];
+            }
+        }
+    }
+    
+    return buffer;
+};
